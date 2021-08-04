@@ -89,6 +89,13 @@ class BdPlannerTasks():
         query = 'SELECT complete, url FROM icons_task'
         return await self.commit_query(query, True)
 
+    async def get_active_recall(self, datetime_now):
+        query = f"""
+                SELECT user_id, recall FROM scheduled_tasks
+                WHERE recall >= '{datetime_now}' AND complete IS NULL
+                """
+        return await self.commit_query(query, True)
+
 
 if __name__ == '__main__':
     os.chdir('..')

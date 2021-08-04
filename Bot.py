@@ -16,12 +16,19 @@ import os
 
 TOKEN = os.environ.get('plannerbot_token')
 
-bd = BdPlannerTasks()
 
+bd = BdPlannerTasks()
 bot = Bot(TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
 kb = BotKeyboards()
+
+
+@dp.message_handler(lambda message: message.from_user.id == 852168663,
+                    commands=['reload'], state="*")
+async def reload_recall(message: types.Message):
+    await message.reply("Окей", reply=False)
+    await utils.check_active_recall(bot, bd, kb.thanks_recall())
 
 
 @dp.message_handler(commands=['start'], state='*')
@@ -65,7 +72,7 @@ async def set_task(callback_query: types.callback_query, state: FSMContext):
     if callback_query.data == 'next_set':
         data_states = await state.get_data()
         print(data_states)
-        await bot.delete_message(chat_id, data_states['msg_task_complete'])
+        await utils.del_message(data_states, chat_id, bot)
         await state.reset_data()
     await bot.answer_callback_query(callback_query.id)
     month = callback_query.message.date.month
